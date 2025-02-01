@@ -12,7 +12,6 @@ import { LettersUsed, LetterUsedProps } from "./components/LettersUsed"
 
 export default function App() {
   const [score, setScore] = useState(0)
-  const[attempt, setAttempts] = useState(0)
   const [letter, setLetter] = useState("")
   const [challenge, setChallenge] = useState<Challenge | null>(null)
   const [lettersUsed, setLettersUsed] = useState<LetterUsedProps[]>([])
@@ -27,8 +26,9 @@ export default function App() {
 
     setChallenge(randomWord)
 
-    setAttempts(0)
+    setScore(0)
     setLetter("")
+    setLettersUsed([])
   }
 
   function handleConfirm() {
@@ -36,23 +36,23 @@ export default function App() {
       return
     }
 
-    if(!letter.trim()){
-      return alert ("Digite uma letra")
+    if (!letter.trim()) {
+      return alert("Digite uma letra")
     }
 
     const value = letter.toUpperCase()
     const exists = lettersUsed.find((used) => used.value.toUpperCase() === value)
 
     if (exists) {
-      return alert ("Você ja utilizou a letra " + value)
+      return alert("Você ja utilizou a letra " + value)
     }
 
     const hits = challenge.word.toUpperCase().split("").filter((char) => char === value).length
 
     const correct = hits > 0
-    const currentScore = score + hits 
+    const currentScore = score + hits
 
-    setLettersUsed((prevState) => [...prevState, {value, correct}])
+    setLettersUsed((prevState) => [...prevState, { value, correct }])
     setScore(currentScore)
 
     setLetter("")
@@ -62,29 +62,33 @@ export default function App() {
     startGame()
   }, [])
 
-  if(!challenge){
+  if (!challenge) {
     return
   }
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={attempt} max={10} onRestart={handleRestartGame} />
+        <Header current={score} max={10} onRestart={handleRestartGame} />
 
         <Tip tip={challenge.tip} />
 
         <div className={styles.word}>
           {
-            challenge.word.split("").map(()=>(
-              <Letter value=""></Letter>
-            ))
+            challenge.word.split("").map((letter, index) => {
+              const letterUsed = lettersUsed.find((used) => used.value.toUpperCase() === letter.toUpperCase())
+
+              return (
+                <Letter key={index} value={letterUsed?.value} color = {letterUsed?.correct ? "correct" : "default"}></Letter>
+              )
+            })
           }
         </div>
 
         <h4>Palpite</h4>
 
         <div className={styles.guess}>
-          <Input autoFocus maxLength={1} placeholder="?" value= {letter}  onChange={(e) => setLetter(e.target.value)}></Input>
+          <Input autoFocus maxLength={1} placeholder="?" value={letter} onChange={(e) => setLetter(e.target.value)}></Input>
           <Button title="Confirmar" onClick={handleConfirm}></Button>
         </div>
 
